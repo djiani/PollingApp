@@ -1,14 +1,18 @@
 package com.revature.PollingApp.model;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.NaturalId;
 
+@Entity
+@Table(name="roles")
 public class Role {
 	
 	@Id
@@ -18,7 +22,7 @@ public class Role {
 	@Enumerated(EnumType.STRING)
 	@NaturalId
 	@Column(length = 60)
-	private RoleName role;
+	private RoleName name;
 	
 	
 	public Role() {
@@ -28,7 +32,7 @@ public class Role {
 
 	public Role(RoleName role) {
 		super();
-		this.role = role;
+		this.name = role;
 	}
 
 
@@ -43,12 +47,12 @@ public class Role {
 
 
 	public RoleName getRole() {
-		return role;
+		return name;
 	}
 
 
 	public void setRole(RoleName role) {
-		this.role = role;
+		this.name = role;
 	}
 	
 	

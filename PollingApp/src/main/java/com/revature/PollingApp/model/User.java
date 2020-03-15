@@ -22,6 +22,7 @@ import org.hibernate.annotations.NaturalId;
 import com.revature.PollingApp.model.audit.DateAudit;
 
 
+@SuppressWarnings("serial")
 @Entity
 @Table(name="users", uniqueConstraints = {
 		@UniqueConstraint(columnNames = {"username"}),
