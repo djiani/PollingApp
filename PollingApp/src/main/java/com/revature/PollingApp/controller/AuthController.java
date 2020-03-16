@@ -1,8 +1,12 @@
 package com.revature.PollingApp.controller;
 
+import java.net.URI;
+import java.util.Collections;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,9 +17,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.revature.PollingApp.exception.AppException;
+import com.revature.PollingApp.model.Role;
+import com.revature.PollingApp.model.RoleName;
+import com.revature.PollingApp.model.User;
+import com.revature.PollingApp.payload.ApiResponse;
 import com.revature.PollingApp.payload.JwtAuthenticationResponse;
 import com.revature.PollingApp.payload.LoginRequest;
+import com.revature.PollingApp.payload.SignUpRequest;
 import com.revature.PollingApp.repository.RoleRepository;
 import com.revature.PollingApp.repository.UserRepository;
 import com.revature.PollingApp.security.JwtTokenProvider;
@@ -39,7 +50,7 @@ public class AuthController {
 	@Autowired
 	JwtTokenProvider jwtTokenProvider;
 	
-	@PostMapping("/siginin")
+	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest){
 		
 		Authentication authentication = authenticationManager.authenticate(
@@ -53,6 +64,39 @@ public class AuthController {
 		return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
 		
 		
+	}
+	
+	@PostMapping("/signup")
+	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest ){
+		
+		if(userRepository.existsByUsername(signUpRequest.getName())) {
+			return new ResponseEntity(new ApiResponse(false,"Username is already taken !"), HttpStatus.BAD_REQUEST);
+		}
+		
+		 if(userRepository.existsByEmail(signUpRequest.getEmail())) {
+	            return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
+	                    HttpStatus.BAD_REQUEST);
+	      }
+		 
+		 // Creating user's account
+	        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),
+	                signUpRequest.getEmail(), signUpRequest.getPassword());
+
+	        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+	        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+	                .orElseThrow(() -> new AppException("User Role not set."));
+
+	        user.setRoles(Collections.singleton(userRole));
+
+	        User result = userRepository.save(user);
+
+	        URI location = ServletUriComponentsBuilder
+	                .fromCurrentContextPath().path("/api/users/{username}")
+	                .buildAndExpand(result.getUsername()).toUri();
+
+	        return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
+	     
 	}
 
 }
