@@ -46,12 +46,12 @@ public class Role {
 	}
 
 
-	public RoleName getRole() {
+	public RoleName getName() {
 		return name;
 	}
 
 
-	public void setRole(RoleName role) {
+	public void setName(RoleName role) {
 		this.name = role;
 	}
 	
